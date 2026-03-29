@@ -251,7 +251,7 @@
         let alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
         
         // API Base URL - uses local server in development, Vercel in production
-        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://investflow.vercel.app';
+        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://investflow-blond.vercel.app';
         
         async function analyzeStock() {
             const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
