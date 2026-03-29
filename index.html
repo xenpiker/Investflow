@@ -128,7 +128,7 @@
         <p>Track, compare, and analyze any stock with live data</p>
         
         <div class="data-notice">
-            ⚠️ <strong>Rate Limit:</strong> 5 API calls/minute on free tier. If it fails, wait 1 minute and try again.
+            ⚠️ <strong>Rate Limit:</strong> 25 API calls/day (free tier). If it fails, wait 1 minute and try again.
         </div>
         
         <div class="search-box">
@@ -140,6 +140,14 @@
     
     <div class="content active" id="overview">
         <div id="overviewContent"><div class="no-data">Enter a ticker to analyze</div></div>
+        <div id="newsSection" style="display:none;margin-top:20px;padding:15px;background:#1a1525;border:1px solid #00d4aa;border-radius:10px">
+            <h4 style="color:#00d4aa;margin-bottom:10px">📰 News & Research</h4>
+            <div id="newsLinks" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+        </div>
+        <div id="aiSection" style="display:none;margin-top:15px;padding:15px;background:#1a1525;border:1px solid #9c27b0;border-radius:10px">
+            <button id="aiBtn" style="background:#9c27b0;color:#fff;padding:10px 20px;border:none;border-radius:6px;cursor:pointer">🤖 AI Analysis</button>
+            <div id="aiOutput" style="margin-top:10px;color:var(--text)"></div>
+        </div>
     </div>
     
     <div class="content" id="watchlist">
@@ -178,7 +186,7 @@
             <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
                 <input type="text" id="compare1" placeholder="Ticker 1" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
                 <input type="text" id="compare2" placeholder="Ticker 2" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
-                <input type="text" id="compare3" placeholder="Ticker 3" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                
                 <button class="btn" onclick="compareStocks()">Compare</button>
             </div>
             <div id="compareContent"><div class="no-data">Enter tickers to compare</div></div>
@@ -254,7 +262,7 @@
         const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://investflow-blond.vercel.app';
         
         async function analyzeStock() {
-            const ticker = document.getElementById("tickerInput").value.trim().toUpperCase(); console.log("Ticker:", ticker);
+            const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
             if (!ticker) return;
             currentTicker = ticker;
             
@@ -311,7 +319,7 @@
             };
         }
         
-        function renderAll(stock) {
+        function renderAll(stock) { updateNews(currentTicker);
             renderOverview(stock);
         }
         
@@ -322,7 +330,30 @@
             return n.toFixed(2);
         }
         
-        function renderOverview(stock) {
+        document.getElementById('aiBtn')?.addEventListener('click', async () => {
+    if (!currentTicker) return;
+    const out = document.getElementById('aiOutput');
+    out.innerHTML = 'Analyzing...';
+    try {
+        const res = await fetch(API_BASE + '/api/stock?ticker=' + currentTicker);
+        const d = await res.json();
+        if (d.error) throw new Error(d.error);
+        const c = d.change >= 0;
+        out.innerHTML = '<div style="background:#222;padding:12px;border-radius:8px"><strong>Price:</strong> $' + d.price.toFixed(2) + ' (' + (c?'+':'') + d.change.toFixed(2) + ')<br><strong>Trend:</strong> ' + (c?'📈 Bullish':'📉 Bearish') + '<br><strong>Volume:</strong> ' + d.volume.toLocaleString() + '</div>';
+    } catch(e) { out.innerHTML = 'Error: ' + e.message; }
+});
+
+function updateNews(ticker) {
+    const news = document.getElementById('newsLinks');
+    const newsSec = document.getElementById('newsSection');
+    const aiSec = document.getElementById('aiSection');
+    if (!ticker || !news) return;
+    newsSec.style.display = 'block';
+    aiSec.style.display = 'block';
+    news.innerHTML = '<a href="https://www.google.com/search?q='+ticker'+stock" target="_blank" style="background:#222;padding:8px 12px;border-radius:6px;color:#fff;text-decoration:none">Google</a><a href="https://www.reuters.com/search/news?blob='+ticker+'" target="_blank" style="background:#222;padding:8px 12px;border-radius:6px;color:#fff;text-decoration:none">Reuters</a><a href="https://finance.yahoo.com/quote/'+ticker+'" target="_blank" style="background:#222;padding:8px 12px;border-radius:6px;color:#fff;text-decoration:none">Yahoo</a>';
+}
+
+function renderOverview(stock) {
             const isPositive = stock.change >= 0;
             
             document.getElementById('overviewContent').innerHTML = `
