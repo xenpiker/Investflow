@@ -153,8 +153,8 @@
         </div>
         
         <!-- AI Analysis Section -->
-        <div id="aiSection" style="display:none;margin-top:15px;padding:15px;background:#130f20;border:2px solid #9c27b0;border-radius:10px">
-            <button id="aiBtn" style="background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:#fff;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🤖 Generate AI Analysis</button>
+        <div id="aiSection" class="ai-section" style="display:none;margin-top:15px;padding:15px;background:#130f20;border:2px solid #9c27b0;border-radius:10px">
+            <button id="aiBtn" class="ai-btn" style="background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:#fff;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🤖 Generate AI Analysis</button>
             <div id="aiOutput" style="margin-top:15px;color:var(--text);line-height:1.6"></div>
         </div>
     </div>
@@ -447,9 +447,9 @@ function formatNum(n, type = 'number') {
                     <div class="metric-card"><div class="label">P/E Ratio</div><div class="value">${stock.pe > 0 ? stock.pe.toFixed(1) : 'N/A'}</div></div>
                     <div class="metric-card"><div class="label">EPS</div><div class="value">${stock.eps > 0 ? '$'+stock.eps.toFixed(2) : 'N/A'}</div></div>
                     <div class="metric-card"><div class="label">Volume</div><div class="value">${formatNum(stock.volume, 'currency')}</div></div>
-                    <div class="metric-card"><div class="label">Open</div><div class="value">$${stock.price - stock.change}</div></div>
-                    <div class="metric-card"><div class="label">High</div><div class="value">$${stock.price * 1.02}</div></div>
-                    <div class="metric-card"><div class="label">Low</div><div class="value">$${stock.price * 0.98}</div></div>
+                    <div class="metric-card"><div class="label">Open</div><div class="value">$${(stock.price - stock.change).toFixed(2)}</div></div>
+                    <div class="metric-card"><div class="label">High</div><div class="value">$${(stock.price * 1.02).toFixed(2)}</div></div>
+                    <div class="metric-card"><div class="label">Low</div><div class="value">$${(stock.price * 0.98).toFixed(2)}</div></div>
                     <div class="metric-card"><div class="label">Div Yield</div><div class="value">${stock.dividendYield ? (stock.dividendYield*100).toFixed(2)+'%' : 'N/A'}</div></div>
                 </div>
                 
