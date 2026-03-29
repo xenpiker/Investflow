@@ -481,7 +481,7 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
             
             MOST_ACTIVE_STOCKS.forEach(stock => {
                 const isPositive = stock.change >= 0;
-                html += '<div style="background:#1a1a25;padding:15px;border-radius:8px;border:1px solid #2a2a35">';
+                html += '<div onclick="document.getElementById(\'tickerInput\').value=\'' + stock.ticker + '\';analyzeStock()" style="background:#1a1a25;padding:15px;border-radius:8px;border:1px solid #2a2a35;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'">';
                 html += '<div style="font-weight:600;color:#00d4aa;font-size:15px">' + stock.ticker + '</div>';
                 html += '<div style="color:#888;font-size:12px;margin:4px 0">' + stock.name.substring(0, 25) + '</div>';
                 html += '<div style="display:flex;justify-content:space-between;margin-top:8px">';
