@@ -127,13 +127,14 @@
         <h1>Stock <span>Analysis</span></h1>
         <p>Enter a ticker symbol to analyze</p>
         
-        <div class="search-box" style="max-width: 500px;">
+        <div class="search-box" style="max-width: 700px;">
             <input type="text" id="tickerInput" placeholder="Enter ticker (e.g., AAPL, MSFT, NVDA)">
             <button onclick="analyzeStock()">Search</button>
+            <button onclick="showMostActive()" style="background:#00d4aa;color:#000">📊 Most Active</button>
         </div>
         
         <div class="data-notice" style="margin-top: 15px; font-size: 11px; padding: 8px 12px;">
-            ⚠️ Free tier: 5 API calls/minute
+            ⚠️ Free tier: 5 searches/minute
         </div>
     </div>
     
@@ -341,6 +342,49 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
             renderOverview(stock);
             // Show AI button after stock is loaded
             document.getElementById('aiSection').style.display = 'block';
+        }
+        
+        // Most Active Stocks - hardcoded data from stockanalysis.com
+        const MOST_ACTIVE_STOCKS = [
+            { ticker: 'HKIT', name: 'Hitek Global Inc.', price: 0.055, change: -5.17, volume: '818M' },
+            { ticker: 'UCAR', name: 'U Power Limited', price: 0.0583, change: -16.83, volume: '251M' },
+            { ticker: 'LNKS', name: 'Linkers Industries', price: 0.0201, change: -19.60, volume: '242M' },
+            { ticker: 'RDGT', name: 'Ridgetech, Inc.', price: 0.0437, change: -48.47, volume: '221M' },
+            { ticker: 'NVDA', name: 'NVIDIA Corporation', price: 167.52, change: -2.17, volume: '196M' },
+            { ticker: 'VSA', name: 'VisionSys AI Inc.', price: 0.76, change: -44.51, volume: '152M' },
+            { ticker: 'IZM', name: 'ICZOOM Group Inc.', price: 0.88, change: 94.54, volume: '102M' },
+            { ticker: 'ITRM', name: 'Iterum Therapeutics', price: 0.0356, change: -79.77, volume: '94M' },
+            { ticker: 'SST', name: 'System1, Inc.', price: 3.32, change: 142.34, volume: '90M' },
+            { ticker: 'ARTL', name: 'Artelo Biosciences', price: 10.54, change: 230.41, volume: '83M' },
+            { ticker: 'INTC', name: 'Intel Corporation', price: 43.13, change: -2.20, volume: '70M' },
+            { ticker: 'GRAB', name: 'Grab Holdings Limited', price: 3.57, change: -3.77, volume: '67M' },
+            { ticker: 'TSLA', name: 'Tesla, Inc.', price: 361.83, change: -2.76, volume: '62M' },
+            { ticker: 'AMZN', name: 'Amazon.com, Inc.', price: 199.34, change: -3.95, volume: '56M' },
+            { ticker: 'SOFI', name: 'SoFi Technologies', price: 15.23, change: -4.03, volume: '55M' }
+        ];
+        
+        function showMostActive() {
+            const container = document.getElementById('overviewContent');
+            let html = '<div style="padding:20px"><h2 style="color:#00d4aa;margin-bottom:20px">📊 Most Active Stocks Today</h2>';
+            html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">';
+            
+            MOST_ACTIVE_STOCKS.forEach(stock => {
+                const isPositive = stock.change >= 0;
+                html += '<div onclick="document.getElementById(\'tickerInput\').value=\'' + stock.ticker + '\';analyzeStock()" style="background:#1a1a25;padding:15px;border-radius:8px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;border:1px solid #2a2a35" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+                html += '<div style="font-weight:600;color:#00d4aa;font-size:15px">' + stock.ticker + '</div>';
+                html += '<div style="color:#888;font-size:12px;margin:4px 0">' + stock.name.substring(0, 25) + '</div>';
+                html += '<div style="display:flex;justify-content:space-between;margin-top:8px">';
+                html += '<span style="color:#fff">$' + stock.price.toFixed(2) + '</span>';
+                html += '<span class="' + (isPositive ? 'positive' : 'negative') + '" style="font-weight:600">' + (isPositive ? '+' : '') + stock.change.toFixed(2) + '%</span>';
+                html += '</div></div>';
+            });
+            
+            html += '</div></div>';
+            container.innerHTML = html;
+            
+            // Hide AI section when showing most active
+            document.getElementById('aiSection').style.display = 'none';
+            document.getElementById('newsSection').style.display = 'none';
         }
         
         document.getElementById('aiBtn')?.addEventListener('click', async () => {
