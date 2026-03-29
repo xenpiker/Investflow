@@ -118,7 +118,7 @@
             .logo { font-size: 13px; }
             .header-links { gap: 6px; }
             .header-links a { font-size: 9px; }
-            .theme-toggle, #marketStatus, #visitorCount { font-size: 9px; }
+            .theme-toggle, #marketStatus, #visitorCount, #currentDate { font-size: 9px; }
             #marketStatus { padding: 2px 4px; }
         }
     </style>
@@ -136,6 +136,7 @@
             <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark">🌙</button>
             <span id="marketStatus" style="font-size:11px;padding:4px 8px;border-radius:4px;background:#222;color:#888">Loading...</span>
             <span style="font-size:11px;color:var(--text-dim)">👁️ <span id="visitorCount">0</span></span>
+            <span id="currentDate" style="font-size:11px;color:var(--text-dim)"></span>
         </div>
     </header>
     
@@ -380,6 +381,18 @@
             }
         }
         updateMarketStatus();
+        
+        // Current date in CST
+        function updateDate() {
+            const now = new Date();
+            const cstOffset = -5; // CST is UTC-5 (not DST)
+            const cstTime = new Date(now.getTime() + (cstOffset * 60 * 60 * 1000));
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            const dateStr = cstTime.toLocaleDateString('en-US', options);
+            const el = document.getElementById('currentDate');
+            if (el) el.textContent = dateStr;
+        }
+        updateDate();
         
         function clearInput() {
             document.getElementById('tickerInput').value = '';
