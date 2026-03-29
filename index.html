@@ -457,21 +457,21 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
         
         // Most Active Stocks - hardcoded data from stockanalysis.com
         const MOST_ACTIVE_STOCKS = [
-            { ticker: 'HKIT', name: 'Hitek Global Inc.', price: 0.055, change: -5.17, volume: '818M' },
-            { ticker: 'UCAR', name: 'U Power Limited', price: 0.0583, change: -16.83, volume: '251M' },
-            { ticker: 'LNKS', name: 'Linkers Industries', price: 0.0201, change: -19.60, volume: '242M' },
-            { ticker: 'RDGT', name: 'Ridgetech, Inc.', price: 0.0437, change: -48.47, volume: '221M' },
-            { ticker: 'NVDA', name: 'NVIDIA Corporation', price: 167.52, change: -2.17, volume: '196M' },
-            { ticker: 'VSA', name: 'VisionSys AI Inc.', price: 0.76, change: -44.51, volume: '152M' },
-            { ticker: 'IZM', name: 'ICZOOM Group Inc.', price: 0.88, change: 94.54, volume: '102M' },
-            { ticker: 'ITRM', name: 'Iterum Therapeutics', price: 0.0356, change: -79.77, volume: '94M' },
-            { ticker: 'SST', name: 'System1, Inc.', price: 3.32, change: 142.34, volume: '90M' },
-            { ticker: 'ARTL', name: 'Artelo Biosciences', price: 10.54, change: 230.41, volume: '83M' },
-            { ticker: 'INTC', name: 'Intel Corporation', price: 43.13, change: -2.20, volume: '70M' },
-            { ticker: 'GRAB', name: 'Grab Holdings Limited', price: 3.57, change: -3.77, volume: '67M' },
-            { ticker: 'TSLA', name: 'Tesla, Inc.', price: 361.83, change: -2.76, volume: '62M' },
-            { ticker: 'AMZN', name: 'Amazon.com, Inc.', price: 199.34, change: -3.95, volume: '56M' },
-            { ticker: 'SOFI', name: 'SoFi Technologies', price: 15.23, change: -4.03, volume: '55M' }
+            { ticker: 'HKIT', name: 'Hitek Global Inc.', price: 0.055, change: -5.17, volume: '818M', sector: 'Technology', pe: 8, dividend: 0 },
+            { ticker: 'UCAR', name: 'U Power Limited', price: 0.0583, change: -16.83, volume: '251M', sector: 'Consumer', pe: 0, dividend: 0 },
+            { ticker: 'LNKS', name: 'Linkers Industries', price: 0.0201, change: -19.60, volume: '242M', sector: 'Industrial', pe: 0, dividend: 0 },
+            { ticker: 'RDGT', name: 'Ridgetech, Inc.', price: 0.0437, change: -48.47, volume: '221M', sector: 'Technology', pe: 0, dividend: 0 },
+            { ticker: 'NVDA', name: 'NVIDIA Corporation', price: 167.52, change: -2.17, volume: '196M', sector: 'Technology', pe: 65, dividend: 0.03 },
+            { ticker: 'VSA', name: 'VisionSys AI Inc.', price: 0.76, change: -44.51, volume: '152M', sector: 'Technology', pe: 0, dividend: 0 },
+            { ticker: 'IZM', name: 'ICZOOM Group Inc.', price: 0.88, change: 94.54, volume: '102M', sector: 'Technology', pe: 12, dividend: 0 },
+            { ticker: 'ITRM', name: 'Iterum Therapeutics', price: 0.0356, change: -79.77, volume: '94M', sector: 'Healthcare', pe: 0, dividend: 0 },
+            { ticker: 'SST', name: 'System1, Inc.', price: 3.32, change: 142.34, volume: '90M', sector: 'Technology', pe: 0, dividend: 0 },
+            { ticker: 'ARTL', name: 'Artelo Biosciences', price: 10.54, change: 230.41, volume: '83M', sector: 'Healthcare', pe: 0, dividend: 0 },
+            { ticker: 'INTC', name: 'Intel Corporation', price: 43.13, change: -2.20, volume: '70M', sector: 'Technology', pe: 108, dividend: 2.1 },
+            { ticker: 'GRAB', name: 'Grab Holdings Limited', price: 3.57, change: -3.77, volume: '67M', sector: 'Financial', pe: 0, dividend: 0 },
+            { ticker: 'TSLA', name: 'Tesla, Inc.', price: 361.83, change: -2.76, volume: '62M', sector: 'Consumer', pe: 180, dividend: 0 },
+            { ticker: 'AMZN', name: 'Amazon.com, Inc.', price: 199.34, change: -3.95, volume: '56M', sector: 'Consumer', pe: 55, dividend: 0 },
+            { ticker: 'SOFI', name: 'SoFi Technologies', price: 15.23, change: -4.03, volume: '55M', sector: 'Financial', pe: 15, dividend: 0 }
         ];
         
         function showMostActive() {
@@ -496,6 +496,50 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
             // Hide AI section when showing most active
             document.getElementById('aiSection').style.display = 'none';
             document.getElementById('newsSection').style.display = 'none';
+        }
+        
+        // Stock Screener
+        function runScreener() {
+            const sector = document.getElementById('sectorFilter').value;
+            const peRange = document.getElementById('peFilter').value;
+            const divRange = document.getElementById('dividendFilter').value;
+            const container = document.getElementById('screenerResults');
+            
+            // Filter most active stocks (simulated screener)
+            let results = MOST_ACTIVE_STOCKS.filter(stock => {
+                // Apply filters
+                if (sector && stock.sector !== sector) return false;
+                if (peRange) {
+                    const pe = stock.pe || 0;
+                    if (peRange === '0-20' && pe >= 20) return false;
+                    if (peRange === '20-40' && (pe < 20 || pe >= 40)) return false;
+                    if (peRange === '40+' && pe < 40) return false;
+                }
+                if (divRange) {
+                    const div = stock.dividend || 0;
+                    if (divRange === '0-2' && div >= 2) return false;
+                    if (divRange === '2-5' && (div < 2 || div >= 5)) return false;
+                    if (divRange === '5+' && div < 5) return false;
+                }
+                return true;
+            });
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="no-data">No stocks match filters</div>';
+                return;
+            }
+            
+            let html = '';
+            results.forEach(stock => {
+                const isPositive = stock.change >= 0;
+                html += '<div onclick="document.getElementById(\'tickerInput\').value=\'' + stock.ticker + '\';showTab(\'overview\');analyzeStock()" style="background:#1a1a25;padding:15px;border-radius:8px;border:1px solid #2a2a35;cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'">';
+                html += '<div style="font-weight:600;color:#00d4aa">' + stock.ticker + '</div>';
+                html += '<div style="color:#888;font-size:12px;margin:4px 0">' + stock.name.substring(0, 20) + '</div>';
+                html += '<div style="display:flex;justify-content:space-between"><span>$' + stock.price.toFixed(2) + '</span>';
+                html += '<span class="' + (isPositive ? 'positive' : 'negative') + '">' + (isPositive ? '+' : '') + stock.change.toFixed(2) + '%</span></div></div>';
+            });
+            
+            container.innerHTML = html;
         }
         
         document.getElementById('aiBtn')?.addEventListener('click', async () => {
@@ -632,12 +676,36 @@ function formatNum(n, type = 'number') {
                 container.innerHTML = '<div class="no-data">No stocks in watchlist</div>';
                 return;
             }
-            container.innerHTML = watchlist.map(t => `
-                <div class="watchlist-item">
-                    <span class="ticker" onclick="document.getElementById('tickerInput').value='${t}';analyzeStock()">${t}</span>
-                    <span><button class="btn btn-small btn-danger" onclick="removeFromWatchlist('${t}')">✕</button></span>
-                </div>
-            `).join('');
+            
+            container.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">';
+            
+            Promise.all(watchlist.map(async (t) => {
+                try {
+                    const res = await fetch(API_BASE + '/api/stock?ticker=' + t);
+                    const data = await res.json();
+                    const isPositive = data.change >= 0;
+                    const arrow = isPositive ? '▲' : '▼';
+                    return `<div style="background:#1a1a25;padding:15px;border-radius:8px;border:1px solid #2a2a35">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="font-weight:600;color:#00d4aa;cursor:pointer" onclick="document.getElementById('tickerInput').value='${t}';analyzeStock()">${t}</span>
+                            <button class="btn btn-small btn-danger" onclick="removeFromWatchlist('${t}')" style="padding:4px 8px">✕</button>
+                        </div>
+                        <div style="color:#888;font-size:12px;margin:8px 0">${data.name || t}</div>
+                        <div style="display:flex;justify-content:space-between">
+                            <span style="color:#fff">$${(data.price || 0).toFixed(2)}</span>
+                            <span class="${isPositive ? 'positive' : 'negative'}" style="font-weight:600">${arrow} ${Math.abs(data.change || 0).toFixed(2)}%</span>
+                        </div>
+                    </div>`;
+                } catch (e) {
+                    return `<div style="background:#1a1a25;padding:15px;border-radius:8px;border:1px solid #2a2a35">
+                        <span style="font-weight:600;color:#00d4aa">${t}</span>
+                        <button class="btn btn-small btn-danger" onclick="removeFromWatchlist('${t}')" style="float:right;padding:4px 8px">✕</button>
+                        <div style="color:#666;font-size:12px;margin:8px 0">Loading...</div>
+                    </div>`;
+                }
+            })).then(html => {
+                container.innerHTML = html.join('') + '</div>';
+            });
         }
         
         function removeFromWatchlist(ticker) {
