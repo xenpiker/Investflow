@@ -92,9 +92,6 @@
         .alert-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--card); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--warning); }
         .alert-item.triggered { border-left-color: var(--success); }
         
-        /* Comparison */
-        .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .compare-card { background: var(--card); border-radius: 12px; padding: 20px; }
         .compare-card h4 { color: var(--accent); margin-bottom: 15px; }
         
         /* Earnings Calendar */
@@ -133,7 +130,6 @@
         <div class="search-box">
             <input type="text" id="tickerInput" placeholder="Enter ticker (e.g., DVLT, AAPL, MSFT)">
             <button onclick="analyzeStock()">Analyze</button>
-            <button class="btn btn-secondary" onclick="addToWatchlist()">+ Watchlist</button>
         </div>
     </div>
     
@@ -264,7 +260,7 @@
             if (!ticker) return;
             currentTicker = ticker;
             
-            ['overview', 'watchlist', 'portfolio', 'compare', 'alerts', 'calendar'].forEach(tab => {
+            ['overview', 'watchlist', 'portfolio', 'alerts', 'calendar'].forEach(tab => {
                 const el = document.getElementById(tab + 'Content');
                 if(el && tab === 'overview') el.innerHTML = '<div class="loading">Fetching live data for ' + ticker + '...</div>';
             });
@@ -417,6 +413,8 @@ const COMPETITORS = {
 function getCompetitors(ticker) {
     return COMPETITORS[ticker] || ['Check sector peers'];
 }
+
+function formatNum(n, type = 'number') {
             if (n === null || n === undefined || isNaN(n)) return 'N/A';
             if (type === 'percent') return (n * 100).toFixed(2) + '%';
             if (type === 'currency') return '$' + (n >= 1e12 ? (n/1e12).toFixed(2) + 'T' : n >= 1e9 ? (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? (n/1e6).toFixed(2) + 'M' : n >= 1e3 ? (n/1e3).toFixed(2) + 'K' : n.toFixed(2));
@@ -552,44 +550,6 @@ function getCompetitors(ticker) {
             renderPortfolio();
         }
         
-        // Compare functions
-        async function compareStocks() {
-            const tickers = [
-                document.getElementById('compare1').value.trim().toUpperCase(),
-                document.getElementById('compare2').value.trim().toUpperCase(),
-                document.getElementById('compare3').value.trim().toUpperCase()
-            ].filter(t => t);
-            
-            if (tickers.length === 0) return;
-            
-            const container = document.getElementById('compareContent');
-            container.innerHTML = '<div class="loading">Loading...</div>';
-            
-            let html = '<div class="compare-grid">';
-            
-            for (const ticker of tickers) {
-                try {
-                    const res = await fetch(API_BASE + '/api/stock?ticker=' + ticker);
-                    const data = await res.json();
-                    html += `
-                        <div class="compare-card">
-                            <h4>${ticker}</h4>
-                            <div class="grid-4">
-                                <div class="metric-card"><div class="label">Price</div><div class="value">$${data.price?.toFixed(2) || 'N/A'}</div></div>
-                                <div class="metric-card"><div class="label">Change</div><div class="value ${data.change >= 0 ? 'positive' : 'negative'}">${data.change?.toFixed(2) || 'N/A'}</div></div>
-                                <div class="metric-card"><div class="label">Volume</div><div class="value">${formatNum(data.volume, 'currency')}</div></div>
-                                <div class="metric-card"><div class="label">Sector</div><div class="value" style="font-size:14px">${data.sector || 'N/A'}</div></div>
-                            </div>
-                        </div>
-                    `;
-                } catch (e) {
-                    html += `<div class="compare-card"><h4>${ticker}</h4><div>Error loading</div></div>`;
-                }
-            }
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
         
         // Alerts functions
         function addAlert() {
