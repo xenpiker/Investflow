@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test</title>
+</head>
+<body>
+    <input id="testInput" value="AAPL">
+    <button id="testBtn">Test</button>
+    <div id="result"></div>
+    <script>
+        const API_BASE = 'https://investflow-blond.vercel.app';
+        
+        document.getElementById('testBtn').onclick = async () => {
+            const ticker = document.getElementById('testInput').value;
+            document.getElementById('result').innerHTML = 'Fetching...';
+            
+            try {
+                const res = await fetch(API_BASE + '/api/stock?ticker=' + ticker);
+                const data = await res.json();
+                document.getElementById('result').innerHTML = 'Price: ' + data.price;
+            } catch(e) {
+                document.getElementById('result').innerHTML = 'Error: ' + e.message;
+            }
+        };
+    </script>
+</body>
+</html>
