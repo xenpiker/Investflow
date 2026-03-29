@@ -16,7 +16,7 @@
         .theme-toggle { background: none; border: none; cursor: pointer; font-size: 15px; padding: 3px; white-space: nowrap; }
         .header-links a { color: var(--text-dim); text-decoration: none; font-size: 11px; white-space: nowrap; transition: color 0.2s; }
         .header-links a:hover { color: var(--text); }
-        .hero { padding: 100px 25px 30px; max-width: 900px; margin: 0 auto; text-align: center; }
+        .hero { padding: 120px 25px 30px; max-width: 900px; margin: 0 auto; text-align: center; }
         .hero h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; }
         .hero h1 span { color: var(--accent); }
         .hero p { color: var(--text-dim); font-size: 14px; margin-bottom: 24px; }
@@ -111,32 +111,38 @@
         .heatmap-item .change { font-weight: 600; }
         
         @media (max-width: 600px) { 
-            .hero { padding: 80px 15px 15px; } 
+            .hero { padding: 150px 15px 15px; } 
             .content { padding: 0 15px 30px; } 
             .heatmap { grid-template-columns: repeat(2, 1fr); }
-            header { padding: 10px 8px; gap: 5px; }
+            header { padding: 10px 8px; gap: 8px; }
             .logo { font-size: 13px; }
-            .header-links { gap: 6px; }
-            .header-links a { font-size: 9px; }
+            .header-links { gap: 8px; flex-wrap: wrap; justify-content: center; }
+            .header-links a { font-size: 10px; }
             .theme-toggle, #marketStatus, #visitorCount, #currentDate { font-size: 9px; }
             #marketStatus { padding: 2px 4px; }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div><div class="logo">📊 Invest<span>Flow</span> Pro</div></div>
-        <div class="header-links">
-            <a href="#" onclick="showTab('overview');return false">Search</a>
-            <a href="#" onclick="showTab('screener');return false">Screener</a>
-            <a href="#" onclick="showTab('watchlist');return false">Watchlist</a>
-            <a href="#" onclick="showTab('portfolio');return false">Portfolio</a>
-            <a href="#" onclick="showTab('alerts');return false">Alerts</a>
-            <a href="#" onclick="showTab('calendar');return false">Earnings</a>
+    <header style="flex-direction: column; align-items: stretch; gap: 8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="logo">📊 Invest<span>Flow</span> Pro</div>
+            <div class="header-links">
+                <a href="#" onclick="showTab('overview');return false">Search</a>
+                <a href="#" onclick="showTab('screener');return false">Screener</a>
+                <a href="#" onclick="showTab('watchlist');return false">Watchlist</a>
+                <a href="#" onclick="showTab('portfolio');return false">Portfolio</a>
+                <a href="#" onclick="showTab('alerts');return false">Alerts</a>
+                <a href="#" onclick="showTab('calendar');return false">Earnings</a>
+            </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
             <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark">🌙</button>
-            <span id="marketStatus" style="font-size:11px;padding:4px 8px;border-radius:4px;background:#222;color:#888">Loading...</span>
-            <span style="font-size:11px;color:var(--text-dim)">👁️ <span id="visitorCount">0</span></span>
-            <span id="currentDate" style="font-size:11px;color:var(--text-dim)"></span>
+            <div style="display:flex;gap:10px;align-items:center">
+                <span id="marketStatus" style="font-size:11px;padding:4px 8px;border-radius:4px;background:#222;color:#888">Loading...</span>
+                <span style="font-size:11px;color:var(--text-dim)">👁️ <span id="visitorCount">0</span></span>
+                <span id="currentDate" style="font-size:11px;color:var(--text-dim)"></span>
+            </div>
         </div>
     </header>
     
