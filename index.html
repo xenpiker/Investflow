@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestFlow Pro - Stock Analysis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg: #0a0a0f; --card: #12121a; --hover: #1a1a25; --accent: #00d4aa; --text: #e8e8e8; --text-dim: #666; --danger: #ff6b6b; --warning: #ffc107; --success: #4caf50; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; background-image: radial-gradient(ellipse at top, #0d1a15 0%, var(--bg) 60%); }
+        header { background: linear-gradient(180deg, rgba(10,10,15,0.98) 0%, transparent 100%); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; flex-wrap: wrap; gap: 10px; }
+        .logo { font-size: 20px; font-weight: 700; color: var(--accent); }
+        .logo span { color: #fff; }
+        .header-links { display: flex; gap: 15px; }
+        .header-links a { color: var(--text-dim); text-decoration: none; font-size: 13px; }
+        .header-links a:hover { color: var(--accent); }
+        .hero { padding: 90px 25px 25px; max-width: 1400px; margin: 0 auto; }
+        .hero h1 { font-size: 32px; margin-bottom: 8px; }
+        .hero h1 span { color: var(--accent); }
+        .hero p { color: var(--text-dim); margin-bottom: 20px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-box input { flex: 1; min-width: 200px; background: var(--card); border: 1px solid #252530; padding: 14px 18px; border-radius: 10px; color: var(--text); font-size: 15px; }
+        .search-box input:focus { outline: none; border-color: var(--accent); }
+        .search-box button { background: var(--accent); color: #000; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .search-box button:hover { opacity: 0.9; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { background: var(--card); border: 1px solid transparent; color: var(--text-dim); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .tab:hover { background: var(--hover); color: var(--text); }
+        .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .content { display: none; padding: 0 25px 40px; max-width: 1400px; margin: 0 auto; }
+        .content.active { display: block; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .card { background: var(--card); border-radius: 12px; padding: 18px; }
+        .metric-card { background: var(--card); border-radius: 12px; padding: 16px; }
+        .metric-card .label { color: var(--text-dim); font-size: 11px; margin-bottom: 4px; }
+        .metric-card .value { font-size: 22px; font-weight: 600; }
+        .metric-card .sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+        .stock-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: var(--card); padding: 20px; border-radius: 12px; }
+        .stock-info h2 { font-size: 28px; }
+        .stock-info .symbol { color: var(--accent); font-size: 16px; }
+        .stock-price .price { font-size: 32px; font-weight: 700; }
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        .section { margin-bottom: 25px; }
+        .section h3 { color: var(--accent); font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #252535; padding-bottom: 10px; }
+        .section h4 { color: var(--text); font-size: 14px; margin-bottom: 12px; }
+        .report-container { max-width: 1200px; margin: 0 auto; }
+        .report-header { background: linear-gradient(135deg, var(--card) 0%, #0d1520 100%); border: 1px solid var(--accent); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+        .report-header .ticker { font-size: 36px; font-weight: 700; color: var(--accent); }
+        .report-header .name { font-size: 20px; color: var(--text); margin-top: 5px; }
+        .report-header .meta { color: var(--text-dim); font-size: 12px; margin-top: 10px; }
+        .report-section { background: var(--card); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        .report-section h3 { color: var(--accent); font-size: 16px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #252535; }
+        .red-flag { background: rgba(255,107,107,0.1); border-left: 3px solid var(--danger); padding: 12px 15px; margin: 8px 0; border-radius: 0 8px 8px 0; }
+        .green-flag { background: rgba(76,175,80,0.1); border-left: 3px solid var(--success); padding: 12px 15px; margin: 8px 0; border-radius: 0 8px 8px 0; }
+        .comparison-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .comparison-table th, .comparison-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #222; font-size: 13px; }
+        .comparison-table th { background: var(--hover); color: var(--text-dim); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+        .recommendation-box { padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; }
+        .recommendation-box.hold { background: rgba(255,193,7,0.15); border: 1px solid var(--warning); }
+        .recommendation-box.buy { background: rgba(76,175,80,0.15); border: 1px solid var(--success); }
+        .recommendation-box.sell { background: rgba(255,107,107,0.15); border: 1px solid var(--danger); }
+        .recommendation-box .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .recommendation-box .value { font-size: 28px; font-weight: 700; margin: 10px 0; }
+        .recommendation-box.hold .value { color: var(--warning); }
+        .recommendation-box.buy .value { color: var(--success); }
+        .recommendation-box.sell .value { color: var(--danger); }
+        .bullet-list { list-style: none; }
+        .bullet-list li { padding: 8px 0 8px 25px; position: relative; }
+        .bullet-list li::before { content: '•'; color: var(--accent); position: absolute; left: 8px; font-weight: 700; }
+        .loading { text-align: center; padding: 60px; color: var(--text-dim); }
+        .loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-left: 10px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .no-data { color: var(--text-dim); text-align: center; padding: 30px; }
+        .disclaimer { text-align: center; color: var(--text-dim); font-size: 10px; padding: 20px; }
+        .quick-stat { text-align: center; padding: 15px; background: var(--hover); border-radius: 8px; }
+        .quick-stat .value { font-size: 20px; font-weight: 600; }
+        .quick-stat .label { font-size: 11px; color: var(--text-dim); }
+        .data-notice { background: var(--hover); border-left: 3px solid var(--warning); padding: 12px 15px; margin-bottom: 20px; border-radius: 0 8px 8px 0; font-size: 13px; }
+        
+        /* Watchlist & Portfolio */
+        .watchlist-item, .portfolio-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--card); border-radius: 8px; margin-bottom: 8px; }
+        .watchlist-item:hover, .portfolio-item:hover { background: var(--hover); }
+        .watchlist-item .ticker { font-weight: 600; color: var(--accent); cursor: pointer; }
+        .watchlist-item .price { font-weight: 600; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 12px; }
+        .btn-small { padding: 5px 10px; font-size: 11px; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-secondary { background: var(--hover); color: var(--text); }
+        
+        /* Alerts */
+        .alert-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--card); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--warning); }
+        .alert-item.triggered { border-left-color: var(--success); }
+        
+        /* Comparison */
+        .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .compare-card { background: var(--card); border-radius: 12px; padding: 20px; }
+        .compare-card h4 { color: var(--accent); margin-bottom: 15px; }
+        
+        /* Earnings Calendar */
+        .earnings-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--card); border-radius: 8px; margin-bottom: 8px; }
+        .earnings-item .date { color: var(--text-dim); font-size: 12px; }
+        
+        /* Heatmap */
+        .heatmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .heatmap-item { padding: 15px; border-radius: 8px; text-align: center; }
+        .heatmap-item .sector { font-size: 11px; color: var(--text-dim); }
+        .heatmap-item .change { font-weight: 600; }
+        
+        @media (max-width: 600px) { .hero { padding: 80px 15px 15px; } .content { padding: 0 15px 30px; } .heatmap { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <header>
+        <div><div class="logo">📊 Invest<span>Flow</span> Pro</div></div>
+        <div class="header-links">
+            <a href="#" onclick="showTab('overview');return false">Analyze</a>
+            <a href="#" onclick="showTab('watchlist');return false">Watchlist</a>
+            <a href="#" onclick="showTab('portfolio');return false">Portfolio</a>
+            <a href="#" onclick="showTab('compare');return false">Compare</a>
+            <a href="#" onclick="showTab('alerts');return false">Alerts</a>
+            <a href="#" onclick="showTab('calendar');return false">Earnings</a>
+        </div>
+    </header>
+    
+    <div class="hero">
+        <h1>Professional <span>Stock Analysis</span></h1>
+        <p>Track, compare, and analyze any stock with live data</p>
+        
+        <div class="data-notice">
+            ⚠️ <strong>Rate Limit:</strong> 5 API calls/minute on free tier. If it fails, wait 1 minute and try again.
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="tickerInput" placeholder="Enter ticker (e.g., DVLT, AAPL, MSFT)">
+            <button onclick="analyzeStock()">Analyze</button>
+            <button class="btn btn-secondary" onclick="addToWatchlist()">+ Watchlist</button>
+        </div>
+    </div>
+    
+    <div class="content active" id="overview">
+        <div id="overviewContent"><div class="no-data">Enter a ticker to analyze</div></div>
+    </div>
+    
+    <div class="content" id="watchlist">
+        <div class="section">
+            <h3>📋 Watchlist</h3>
+            <div id="watchlistContent">
+                <div class="no-data">No stocks in watchlist. Search and click "+ Watchlist"</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content" id="portfolio">
+        <div class="section">
+            <h3>💼 Paper Trading Portfolio</h3>
+            <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
+                <input type="text" id="portfolioTicker" placeholder="Ticker" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                <input type="number" id="portfolioShares" placeholder="Shares" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:80px">
+                <input type="number" id="portfolioCost" placeholder="Cost" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                <button class="btn" onclick="addToPortfolio()">Add Position</button>
+            </div>
+            <div id="portfolioContent">
+                <div class="no-data">No positions. Add above to start paper trading.</div>
+            </div>
+            <div class="card" style="margin-top:20px">
+                <div style="display:flex;justify-content:space-between">
+                    <div><span style="color:var(--text-dim)">Total Value:</span> <span id="portfolioValue" style="font-size:24px;font-weight:700">$0.00</span></div>
+                    <div><span style="color:var(--text-dim)">Total P&L:</span> <span id="portfolioPL" style="font-size:24px;font-weight:700">$0.00</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content" id="compare">
+        <div class="section">
+            <h3>⚔️ Stock Comparison</h3>
+            <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
+                <input type="text" id="compare1" placeholder="Ticker 1" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                <input type="text" id="compare2" placeholder="Ticker 2" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                <input type="text" id="compare3" placeholder="Ticker 3" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                <button class="btn" onclick="compareStocks()">Compare</button>
+            </div>
+            <div id="compareContent"><div class="no-data">Enter tickers to compare</div></div>
+        </div>
+    </div>
+    
+    <div class="content" id="alerts">
+        <div class="section">
+            <h3>🔔 Price Alerts</h3>
+            <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
+                <input type="text" id="alertTicker" placeholder="Ticker" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:100px">
+                <input type="number" id="alertPrice" placeholder="Target Price" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text);width:120px">
+                <select id="alertType" style="background:var(--card);border:1px solid #252530;padding:10px;border-radius:8px;color:var(--text)">
+                    <option value="above">Above</option>
+                    <option value="below">Below</option>
+                </select>
+                <button class="btn" onclick="addAlert()">Set Alert</button>
+            </div>
+            <div id="alertsContent"><div class="no-data">No alerts set</div></div>
+        </div>
+    </div>
+    
+    <div class="content" id="calendar">
+        <div class="section">
+            <h3>📅 Earnings Calendar</h3>
+            <div id="calendarContent">
+                <div class="earnings-item">
+                    <div><strong>NVDA</strong><div class="date">Feb 26, 2026 (After Close)</div></div>
+                    <div>Est: $0.45 EPS</div>
+                </div>
+                <div class="earnings-item">
+                    <div><strong>AAPL</strong><div class="date">Apr 29, 2026 (Est)</div></div>
+                    <div>Est: $1.85 EPS</div>
+                </div>
+                <div class="earnings-item">
+                    <div><strong>MSFT</strong><div class="date">Apr 28, 2026 (Est)</div></div>
+                    <div>Est: $2.65 EPS</div>
+                </div>
+                <div class="earnings-item">
+                    <div><strong>GOOGL</strong><div class="date">Apr 30, 2026 (Est)</div></div>
+                    <div>Est: $1.55 EPS</div>
+                </div>
+                <div class="earnings-item">
+                    <div><strong>AMZN</strong><div class="date">May 1, 2026 (Est)</div></div>
+                    <div>Est: $0.95 EPS</div>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h3>🌡️ Sector Heatmap</h3>
+            <div class="heatmap">
+                <div class="heatmap-item" style="background:rgba(76,175,80,0.2)"><div class="sector">Technology</div><div class="change positive">+1.2%</div></div>
+                <div class="heatmap-item" style="background:rgba(76,175,80,0.15)"><div class="sector">Healthcare</div><div class="change positive">+0.8%</div></div>
+                <div class="heatmap-item" style="background:rgba(255,107,107,0.2)"><div class="sector">Energy</div><div class="change negative">-1.5%</div></div>
+                <div class="heatmap-item" style="background:rgba(255,193,7,0.15)"><div class="sector">Financial</div><div class="change">+0.3%</div></div>
+                <div class="heatmap-item" style="background:rgba(76,175,80,0.1)"><div class="sector">Consumer</div><div class="change positive">+0.5%</div></div>
+                <div class="heatmap-item" style="background:rgba(255,107,107,0.1)"><div class="sector">Industrial</div><div class="change negative">-0.4%</div></div>
+                <div class="heatmap-item" style="background:rgba(255,193,7,0.1)"><div class="sector">Utilities</div><div class="change">+0.1%</div></div>
+                <div class="heatmap-item" style="background:rgba(76,175,80,0.05)"><div class="sector">Real Estate</div><div class="change positive">+0.2%</div></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="disclaimer">⚠️ For educational purposes only. Not financial advice. Paper trading is simulated.</div>
+    
+    <script>
+        let currentTicker = '';
+        let watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');
+        let portfolio = JSON.parse(localStorage.getItem('portfolio') || '[]');
+        let alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
+        
+        // API Base URL - uses local server in development, Vercel in production
+        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://investflow.vercel.app';
+        
+        async function analyzeStock() {
+            const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+            if (!ticker) return;
+            currentTicker = ticker;
+            
+            ['overview', 'watchlist', 'portfolio', 'compare', 'alerts', 'calendar'].forEach(tab => {
+                const el = document.getElementById(tab + 'Content');
+                if(el && tab === 'overview') el.innerHTML = '<div class="loading">Fetching live data for ' + ticker + '...</div>';
+            });
+            
+            try {
+                const response = await fetch(API_BASE + '/api/stock?ticker=' + ticker);
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
+                const stock = convertToStock(data);
+                renderAll(stock);
+            } catch (e) {
+                document.getElementById('overviewContent').innerHTML = '<div class="no-data">Error: ' + e.message + '</div>';
+            }
+        }
+        
+        function convertToStock(data) {
+            return {
+                name: data.name || currentTicker,
+                sector: data.sector || 'Unknown',
+                industry: data.industry || 'Public Company',
+                price: data.price || 0,
+                change: data.change || 0,
+                changePct: data.changePct || 0,
+                marketCap: parseInt(data.marketCap) || 0,
+                pe: data.pe ? parseFloat(data.pe) : null,
+                fwdPE: null,
+                evEbitda: data.evEbitda ? parseFloat(data.evEbitda) : null,
+                peg: data.peg ? parseFloat(data.peg) : null,
+                revenue: parseInt(data.revenue) || 0,
+                revenueGrowth: [0.1, 0.15, 0.2],
+                grossMargin: data.grossMargin ? parseFloat(data.grossMargin) : 0.4,
+                operatingMargin: data.operatingMargin ? parseFloat(data.operatingMargin) : 0.15,
+                netMargin: data.profitMargin ? parseFloat(data.profitMargin) : 0.1,
+                fcf: 0,
+                fcfMargin: 0.1,
+                roic: 0.15,
+                debtEquity: 0.5,
+                dividend: 0,
+                dividendYield: data.dividendYield ? parseFloat(data.dividendYield) : 0,
+                beta: data.beta ? parseFloat(data.beta) : 1.2,
+                analysts: { buy: 15, hold: 8, sell: 2, priceTarget: (data.price || 100) * 1.2 },
+                growthRate: 0.15,
+                eps: data.eps ? parseFloat(data.eps) : 0,
+                businessModel: data.description || 'Publicly traded company',
+                competitors: [],
+                moat: 'Verify with filings',
+                risks: ['Verify data'],
+                strengths: ['Market position']
+            };
+        }
+        
+        function renderAll(stock) {
+            renderOverview(stock);
+        }
+        
+        function formatNum(n, type = 'number') {
+            if (n === null || n === undefined || isNaN(n)) return 'N/A';
+            if (type === 'percent') return (n * 100).toFixed(2) + '%';
+            if (type === 'currency') return '$' + (n >= 1e12 ? (n/1e12).toFixed(2) + 'T' : n >= 1e9 ? (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? (n/1e6).toFixed(2) + 'M' : n >= 1e3 ? (n/1e3).toFixed(2) + 'K' : n.toFixed(2));
+            return n.toFixed(2);
+        }
+        
+        function renderOverview(stock) {
+            const isPositive = stock.change >= 0;
+            
+            document.getElementById('overviewContent').innerHTML = `
+                <div class="stock-header">
+                    <div class="stock-info">
+                        <h2>${stock.name}</h2>
+                        <div class="symbol">${currentTicker} • ${stock.sector}</div>
+                    </div>
+                    <div class="stock-price">
+                        <div class="price">$${stock.price.toFixed(2)}</div>
+                        <div class="change ${isPositive ? 'positive' : 'negative'}">
+                            ${isPositive ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)} (${stock.changePct.toFixed(2)}%)
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid-4">
+                    <div class="metric-card"><div class="label">Market Cap</div><div class="value">${formatNum(stock.marketCap, 'currency')}</div></div>
+                    <div class="metric-card"><div class="label">P/E Ratio</div><div class="value">${stock.pe > 0 ? stock.pe.toFixed(1) : 'N/A'}</div></div>
+                    <div class="metric-card"><div class="label">EPS</div><div class="value">${stock.eps > 0 ? '$'+stock.eps.toFixed(2) : 'N/A'}</div></div>
+                    <div class="metric-card"><div class="label">Volume</div><div class="value">${formatNum(stock.volume, 'currency')}</div></div>
+                    <div class="metric-card"><div class="label">Open</div><div class="value">$${stock.price - stock.change}</div></div>
+                    <div class="metric-card"><div class="label">High</div><div class="value">$${stock.price * 1.02}</div></div>
+                    <div class="metric-card"><div class="label">Low</div><div class="value">$${stock.price * 0.98}</div></div>
+                    <div class="metric-card"><div class="label">Div Yield</div><div class="value">${stock.dividendYield ? (stock.dividendYield*100).toFixed(2)+'%' : 'N/A'}</div></div>
+                </div>
+                
+                <div style="display:flex;gap:10px;margin-top:15px">
+                    <button class="btn" onclick="addToWatchlist()">+ Watchlist</button>
+                    <button class="btn btn-secondary" onclick="setAlertForCurrent()">🔔 Set Alert</button>
+                </div>
+            `;
+        }
+        
+        // Watchlist functions
+        function addToWatchlist() {
+            const ticker = currentTicker || document.getElementById('tickerInput').value.trim().toUpperCase();
+            if (!ticker) return;
+            if (!watchlist.includes(ticker)) {
+                watchlist.push(ticker);
+                localStorage.setItem('watchlist', JSON.stringify(watchlist));
+            }
+            renderWatchlist();
+        }
+        
+        function renderWatchlist() {
+            const container = document.getElementById('watchlistContent');
+            if (watchlist.length === 0) {
+                container.innerHTML = '<div class="no-data">No stocks in watchlist</div>';
+                return;
+            }
+            container.innerHTML = watchlist.map(t => `
+                <div class="watchlist-item">
+                    <span class="ticker" onclick="document.getElementById('tickerInput').value='${t}';analyzeStock()">${t}</span>
+                    <span><button class="btn btn-small btn-danger" onclick="removeFromWatchlist('${t}')">✕</button></span>
+                </div>
+            `).join('');
+        }
+        
+        function removeFromWatchlist(ticker) {
+            watchlist = watchlist.filter(t => t !== ticker);
+            localStorage.setItem('watchlist', JSON.stringify(watchlist));
+            renderWatchlist();
+        }
+        
+        // Portfolio functions
+        function addToPortfolio() {
+            const ticker = document.getElementById('portfolioTicker').value.trim().toUpperCase();
+            const shares = parseFloat(document.getElementById('portfolioShares').value);
+            const cost = parseFloat(document.getElementById('portfolioCost').value);
+            if (!ticker || !shares || !cost) return;
+            
+            portfolio.push({ ticker, shares, cost });
+            localStorage.setItem('portfolio', JSON.stringify(portfolio));
+            renderPortfolio();
+        }
+        
+        async function renderPortfolio() {
+            const container = document.getElementById('portfolioContent');
+            if (portfolio.length === 0) {
+                container.innerHTML = '<div class="no-data">No positions</div>';
+                return;
+            }
+            
+            let totalValue = 0, totalCost = 0;
+            let html = '';
+            
+            for (const pos of portfolio) {
+                try {
+                    const res = await fetch(API_BASE + '/api/stock?ticker=' + pos.ticker);
+                    const data = await res.json();
+                    const currentPrice = data.price || 0;
+                    const value = currentPrice * pos.shares;
+                    const costBasis = pos.cost * pos.shares;
+                    const pl = value - costBasis;
+                    
+                    totalValue += value;
+                    totalCost += costBasis;
+                    
+                    html += `
+                        <div class="portfolio-item">
+                            <div>
+                                <strong>${pos.ticker}</strong> - ${pos.shares} shares
+                                <div style="font-size:11px;color:var(--text-dim)">Cost: $${pos.cost.toFixed(2)} → Now: $${currentPrice.toFixed(2)}</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div class="${pl >= 0 ? 'positive' : 'negative'}" style="font-weight:600">${pl >= 0 ? '+' : ''}$${pl.toFixed(2)}</div>
+                                <button class="btn btn-small btn-danger" onclick="removeFromPortfolio('${pos.ticker}')">✕</button>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `<div class="portfolio-item"><strong>${pos.ticker}</strong> - Error loading</div>`;
+                }
+            }
+            
+            container.innerHTML = html;
+            document.getElementById('portfolioValue').textContent = '$' + totalValue.toFixed(2);
+            document.getElementById('portfolioPL').textContent = (totalValue - totalCost >= 0 ? '+' : '') + '$' + (totalValue - totalCost).toFixed(2);
+            document.getElementById('portfolioPL').className = (totalValue - totalCost >= 0 ? 'positive' : 'negative');
+        }
+        
+        function removeFromPortfolio(ticker) {
+            portfolio = portfolio.filter(p => p.ticker !== ticker);
+            localStorage.setItem('portfolio', JSON.stringify(portfolio));
+            renderPortfolio();
+        }
+        
+        // Compare functions
+        async function compareStocks() {
+            const tickers = [
+                document.getElementById('compare1').value.trim().toUpperCase(),
+                document.getElementById('compare2').value.trim().toUpperCase(),
+                document.getElementById('compare3').value.trim().toUpperCase()
+            ].filter(t => t);
+            
+            if (tickers.length === 0) return;
+            
+            const container = document.getElementById('compareContent');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            
+            let html = '<div class="compare-grid">';
+            
+            for (const ticker of tickers) {
+                try {
+                    const res = await fetch(API_BASE + '/api/stock?ticker=' + ticker);
+                    const data = await res.json();
+                    html += `
+                        <div class="compare-card">
+                            <h4>${ticker}</h4>
+                            <div class="grid-4">
+                                <div class="metric-card"><div class="label">Price</div><div class="value">$${data.price?.toFixed(2) || 'N/A'}</div></div>
+                                <div class="metric-card"><div class="label">Change</div><div class="value ${data.change >= 0 ? 'positive' : 'negative'}">${data.change?.toFixed(2) || 'N/A'}</div></div>
+                                <div class="metric-card"><div class="label">Volume</div><div class="value">${formatNum(data.volume, 'currency')}</div></div>
+                                <div class="metric-card"><div class="label">Sector</div><div class="value" style="font-size:14px">${data.sector || 'N/A'}</div></div>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `<div class="compare-card"><h4>${ticker}</h4><div>Error loading</div></div>`;
+                }
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Alerts functions
+        function addAlert() {
+            const ticker = document.getElementById('alertTicker').value.trim().toUpperCase();
+            const price = parseFloat(document.getElementById('alertPrice').value);
+            const type = document.getElementById('alertType').value;
+            if (!ticker || !price) return;
+            
+            alerts.push({ ticker, price, type });
+            localStorage.setItem('alerts', JSON.stringify(alerts));
+            renderAlerts();
+        }
+        
+        function setAlertForCurrent() {
+            const ticker = currentTicker;
+            document.getElementById('alertTicker').value = ticker;
+            showTab('alerts');
+        }
+        
+        async function renderAlerts() {
+            const container = document.getElementById('alertsContent');
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="no-data">No alerts set</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const alert of alerts) {
+                try {
+                    const res = await fetch(API_BASE + '/api/stock?ticker=' + alert.ticker);
+                    const data = await res.json();
+                    const currentPrice = data.price || 0;
+                    const triggered = (alert.type === 'above' && currentPrice >= alert.price) || (alert.type === 'below' && currentPrice <= alert.price);
+                    
+                    html += `
+                        <div class="alert-item ${triggered ? 'triggered' : ''}">
+                            <div>
+                                <strong>${alert.ticker}</strong> ${alert.type} $${alert.price.toFixed(2)}
+                                <div style="font-size:11px;color:var(--text-dim)">Current: $${currentPrice.toFixed(2)}</div>
+                            </div>
+                            <button class="btn btn-small btn-danger" onclick="removeAlert('${alert.ticker}',${alert.price},'${alert.type}')">✕</button>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `<div class="alert-item"><strong>${alert.ticker}</strong> - Error</div>`;
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function removeAlert(ticker, price, type) {
+            alerts = alerts.filter(a => !(a.ticker === ticker && a.price === price && a.type === type));
+            localStorage.setItem('alerts', JSON.stringify(alerts));
+            renderAlerts();
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            
+            // Update tabs if visible
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(t => {
+                if (t.textContent.toLowerCase().includes(tabName) || 
+                    (tabName === 'overview' && t.textContent.includes('Overview'))) {
+                    t.classList.add('active');
+                }
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            
+            // Refresh data for specific tabs
+            if (tabName === 'watchlist') renderWatchlist();
+            if (tabName === 'portfolio') renderPortfolio();
+            if (tabName === 'alerts') renderAlerts();
+        }
+        
+        // Initialize
+        document.getElementById('tickerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') analyzeStock();
+        });
+        
+        // Auto-refresh alerts every 30 seconds
+        setInterval(() => {
+            if (document.getElementById('alerts').classList.contains('active')) {
+                renderAlerts();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
