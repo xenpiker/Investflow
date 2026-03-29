@@ -217,6 +217,7 @@
                 <button class="btn" onclick="addToPortfolio()">Add Position</button>
             </div>
             <div id="portfolioContent">
+                <canvas id="portfolioChart" style="width:100%;height:150px;margin-bottom:20px;display:none"></canvas>
                 <div class="no-data">No positions. Add above to start paper trading.</div>
             </div>
             <div class="card" style="margin-top:20px">
@@ -652,8 +653,15 @@ function formatNum(n, type = 'number') {
             const cost = parseFloat(document.getElementById('portfolioCost').value);
             if (!ticker || !shares || !cost) return;
             
-            portfolio.push({ ticker, shares, cost });
+            // Add to portfolio
+            portfolio.push({ ticker, shares, cost, addedAt: Date.now() });
             localStorage.setItem('portfolio', JSON.stringify(portfolio));
+            
+            // Track history for chart
+            const history = JSON.parse(localStorage.getItem('portfolio_history') || '[]');
+            history.push({ date: Date.now(), value: 0 }); // Will update after fetch
+            localStorage.setItem('portfolio_history', JSON.stringify(history));
+            
             renderPortfolio();
         }
         
@@ -700,6 +708,61 @@ function formatNum(n, type = 'number') {
             document.getElementById('portfolioValue').textContent = '$' + totalValue.toFixed(2);
             document.getElementById('portfolioPL').textContent = (totalValue - totalCost >= 0 ? '+' : '') + '$' + (totalValue - totalCost).toFixed(2);
             document.getElementById('portfolioPL').className = (totalValue - totalCost >= 0 ? 'positive' : 'negative');
+            
+            // Update and show chart
+            updatePortfolioChart(totalValue);
+        }
+        
+        function updatePortfolioChart(currentValue) {
+            const canvas = document.getElementById('portfolioChart');
+            if (!canvas || portfolio.length === 0) return;
+            
+            // Get or create history
+            let history = JSON.parse(localStorage.getItem('portfolio_history') || '[]');
+            if (history.length === 0 || history[history.length - 1].date < Date.now() - 3600000) {
+                history.push({ date: Date.now(), value: currentValue });
+                localStorage.setItem('portfolio_history', JSON.stringify(history));
+            }
+            
+            // Keep last 30 data points
+            history = history.slice(-30);
+            
+            if (history.length < 2) {
+                canvas.style.display = 'none';
+                return;
+            }
+            
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width = canvas.offsetWidth * 2;
+            const h = canvas.height = canvas.offsetHeight * 2;
+            
+            const values = history.map(h => h.value);
+            const min = Math.min(...values) * 0.95;
+            const max = Math.max(...values) * 1.05;
+            
+            ctx.clearRect(0, 0, w, h);
+            ctx.beginPath();
+            ctx.strokeStyle = '#00d4aa';
+            ctx.lineWidth = 3;
+            
+            values.forEach((v, i) => {
+                const x = (i / (values.length - 1)) * w;
+                const y = h - ((v - min) / (max - min)) * h;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Gradient fill
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, 'rgba(0, 212, 170, 0.3)');
+            grad.addColorStop(1, 'rgba(0, 212, 170, 0)');
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
         }
         
         function removeFromPortfolio(ticker) {
