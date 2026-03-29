@@ -125,6 +125,8 @@
             <a href="#" onclick="showTab('alerts');return false">Alerts</a>
             <a href="#" onclick="showTab('calendar');return false">Earnings</a>
             <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark">🌙</button>
+            <span id="marketStatus" style="font-size:11px;padding:4px 8px;border-radius:4px;background:#222;color:#888">Loading...</span>
+            <span style="font-size:11px;color:var(--text-dim)">👁️ <span id="visitorCount">0</span></span>
         </div>
     </header>
     
@@ -329,6 +331,44 @@
             }
         }
         initVisitorCounter();
+        
+        // Market status (US exchanges)
+        function updateMarketStatus() {
+            const now = new Date();
+            const etOffset = -4; // ET is UTC-4 during DST
+            const etTime = new Date(now.getTime() + (etOffset * 60 * 60 * 1000));
+            const hour = etTime.getUTCHours();
+            const minute = etTime.getUTCMinutes();
+            const day = etTime.getUTCDay();
+            
+            const el = document.getElementById('marketStatus');
+            let status = 'Closed';
+            let color = '#ff6b6b';
+            
+            if (day === 0 || day === 6) {
+                status = 'Closed';
+                color = '#ff6b6b';
+            } else if (hour >= 9 && hour < 16) {
+                status = '🟢 Open';
+                color = '#4caf50';
+            } else if (hour >= 4 && hour < 9) {
+                status = 'Pre-Market';
+                color = '#ffc107';
+            } else if (hour >= 16 && hour < 20) {
+                status = 'After-Hours';
+                color = '#ffc107';
+            } else {
+                status = 'Closed';
+                color = '#ff6b6b';
+            }
+            
+            if (el) {
+                el.textContent = status;
+                el.style.background = color + '22';
+                el.style.color = color;
+            }
+        }
+        updateMarketStatus();
         
         async function analyzeStock() {
             const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
