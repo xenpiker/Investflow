@@ -7,11 +7,14 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --bg: #0a0a0f; --card: #12121a; --hover: #1a1a25; --accent: #00d4aa; --text: #e8e8e8; --text-dim: #666; --danger: #ff6b6b; --warning: #ffc107; --success: #4caf50; }
+        :root.light { --bg: #f5f5f7; --card: #ffffff; --hover: #e8e8ea; --accent: #00a080; --text: #1a1a1a; --text-dim: #666; --danger: #d32f2f; --warning: #f57c00; --success: #388e3c; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; background-image: radial-gradient(ellipse at top, #0d1a15 0%, var(--bg) 60%); }
         header { background: linear-gradient(180deg, rgba(10,10,15,0.98) 0%, transparent 100%); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 100; flex-wrap: wrap; gap: 10px; }
         .logo { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
         .logo span { color: #fff; }
-        .header-links { display: flex; gap: 20px; }
+        .header-links { display: flex; gap: 20px; align-items: center; }
+        .theme-toggle { background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; opacity: 0.8; transition: opacity 0.2s; }
+        .theme-toggle:hover { opacity: 1; }
         .header-links a { color: var(--text-dim); text-decoration: none; font-size: 13px; transition: color 0.2s; }
         .header-links a:hover { color: var(--text); }
         .hero { padding: 100px 25px 30px; max-width: 900px; margin: 0 auto; text-align: center; }
@@ -116,10 +119,12 @@
         <div><div class="logo">📊 Invest<span>Flow</span> Pro</div></div>
         <div class="header-links">
             <a href="#" onclick="showTab('overview');return false">Search</a>
+            <a href="#" onclick="showTab('screener');return false">Screener</a>
             <a href="#" onclick="showTab('watchlist');return false">Watchlist</a>
             <a href="#" onclick="showTab('portfolio');return false">Portfolio</a>
             <a href="#" onclick="showTab('alerts');return false">Alerts</a>
             <a href="#" onclick="showTab('calendar');return false">Earnings</a>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark">🌙</button>
         </div>
     </header>
     
@@ -157,6 +162,37 @@
         <div id="aiSection" class="ai-section" style="display:none;margin-top:15px;padding:15px;background:#130f20;border:2px solid #9c27b0;border-radius:10px">
             <button id="aiBtn" class="ai-btn" style="background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:#fff;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🤖 Generate AI Analysis</button>
             <div id="aiOutput" style="margin-top:15px;color:var(--text);line-height:1.6"></div>
+        </div>
+    </div>
+    
+    <div class="content" id="screener">
+        <div class="section">
+            <h3>🔍 Stock Screener</h3>
+            <div class="search-box" style="max-width: 600px; margin-bottom: 20px;">
+                <select id="sectorFilter" style="background: var(--card); border: 1px solid #2a2a35; padding: 12px; border-radius: 10px; color: var(--text); min-width: 140px;">
+                    <option value="">All Sectors</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Financial">Financial</option>
+                    <option value="Consumer">Consumer</option>
+                    <option value="Energy">Energy</option>
+                    <option value="Industrial">Industrial</option>
+                </select>
+                <select id="peFilter" style="background: var(--card); border: 1px solid #2a2a35; padding: 12px; border-radius: 10px; color: var(--text); min-width: 140px;">
+                    <option value="">Any P/E</option>
+                    <option value="0-20">P/E 0-20</option>
+                    <option value="20-40">P/E 20-40</option>
+                    <option value="40+">P/E 40+</option>
+                </select>
+                <select id="dividendFilter" style="background: var(--card); border: 1px solid #2a2a35; padding: 12px; border-radius: 10px; color: var(--text); min-width: 140px;">
+                    <option value="">Any Dividend</option>
+                    <option value="0-2">Dividend 0-2%</option>
+                    <option value="2-5">Dividend 2-5%</option>
+                    <option value="5+">Dividend 5%+</option>
+                </select>
+                <button onclick="runScreener()" style="background: var(--accent); color: #000; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer;">Run Filter</button>
+            </div>
+            <div id="screenerResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
         </div>
     </div>
     
@@ -259,6 +295,40 @@
         
         // API Base URL - uses local server in development, Vercel in production
         const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8888' : 'https://investflow-blond.vercel.app';
+        
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const btn = document.querySelector('.theme-toggle');
+            if (html.classList.contains('light')) {
+                html.classList.remove('light');
+                btn.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.classList.add('light');
+                btn.textContent = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        // Load saved theme
+        (function() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light');
+                document.querySelector('.theme-toggle').textContent = '☀️';
+            }
+        })();
+        
+        // Visitor counter
+        function initVisitorCounter() {
+            let visits = parseInt(localStorage.getItem('investflow_visits') || '0');
+            localStorage.setItem('investflow_visits', visits + 1);
+            const counterEl = document.getElementById('visitorCount');
+            if (counterEl) {
+                counterEl.textContent = (visits + 1).toLocaleString();
+            }
+        }
+        initVisitorCounter();
         
         async function analyzeStock() {
             const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
@@ -370,7 +440,7 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
             
             MOST_ACTIVE_STOCKS.forEach(stock => {
                 const isPositive = stock.change >= 0;
-                html += '<div onclick="document.getElementById(\'tickerInput\').value=\'' + stock.ticker + '\';analyzeStock()" style="background:#1a1a25;padding:15px;border-radius:8px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;border:1px solid #2a2a35" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+                html += '<div style="background:#1a1a25;padding:15px;border-radius:8px;border:1px solid #2a2a35">';
                 html += '<div style="font-weight:600;color:#00d4aa;font-size:15px">' + stock.ticker + '</div>';
                 html += '<div style="color:#888;font-size:12px;margin:4px 0">' + stock.name.substring(0, 25) + '</div>';
                 html += '<div style="display:flex;justify-content:space-between;margin-top:8px">';
@@ -476,7 +546,7 @@ function formatNum(n, type = 'number') {
                 <div class="stock-header">
                     <div class="stock-info">
                         <h2>${stock.name}</h2>
-                        <div class="symbol">${currentTicker} • ${stock.sector}</div>
+                        <div class="symbol">${currentTicker}${stock.sector && stock.sector !== 'Unknown' ? ' • ' + stock.sector : ''}</div>
                     </div>
                     <div class="stock-price">
                         <div class="price">$${stock.price.toFixed(2)}</div>
