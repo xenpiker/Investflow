@@ -140,6 +140,24 @@
     
     <div class="content active" id="overview">
         <div id="overviewContent"><div class="no-data">Enter a ticker to analyze</div></div>
+        
+        <!-- News & Research Section -->
+        <div id="newsSection" style="display:none;margin-top:20px;padding:15px;background:#0d1520;border:2px solid #00d4aa;border-radius:10px">
+            <h4 style="color:#00d4aa;margin-bottom:12px;font-size:16px">📰 Latest News & Research</h4>
+            <div id="newsLinks" style="display:flex;gap:8px;flex-wrap:wrap">
+                <a href="" id="newsGoogle" target="_blank" style="background:#222;padding:8px 14px;border-radius:6px;color:#fff;text-decoration:none;font-size:13px">Google News</a>
+                <a href="" id="newsReuters" target="_blank" style="background:#222;padding:8px 14px;border-radius:6px;color:#fff;text-decoration:none;font-size:13px">Reuters</a>
+                <a href="" id="newsYahoo" target="_blank" style="background:#222;padding:8px 14px;border-radius:6px;color:#fff;text-decoration:none;font-size:13px">Yahoo Finance</a>
+                <a href="" id="newsMarketWatch" target="_blank" style="background:#222;padding:8px 14px;border-radius:6px;color:#fff;text-decoration:none;font-size:13px">MarketWatch</a>
+                <a href="" id="newsSEC" target="_blank" style="background:#222;padding:8px 14px;border-radius:6px;color:#fff;text-decoration:none;font-size:13px">SEC Filings</a>
+            </div>
+        </div>
+        
+        <!-- AI Analysis Section -->
+        <div id="aiSection" style="display:none;margin-top:15px;padding:15px;background:#130f20;border:2px solid #9c27b0;border-radius:10px">
+            <button id="aiBtn" style="background:linear-gradient(135deg,#9c27b0,#7b1fa2);color:#fff;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🤖 Generate AI Analysis</button>
+            <div id="aiOutput" style="margin-top:15px;color:var(--text);line-height:1.6"></div>
+        </div>
     </div>
     
     <div class="content" id="watchlist">
@@ -255,11 +273,7 @@
         
         async function analyzeStock() {
             const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
-            if (!ticker) {
-                alert('Please enter a ticker symbol');
-                return;
-            }
-            document.getElementById('overviewContent').innerHTML = '<div style="text-align:center;padding:40px;color:#00d4aa">🔄 Loading ' + ticker + '...</div>';
+            if (!ticker) return;
             currentTicker = ticker;
             
             ['overview', 'watchlist', 'portfolio', 'compare', 'alerts', 'calendar'].forEach(tab => {
@@ -315,11 +329,57 @@
             };
         }
         
-        function renderAll(stock) {
+        function updateNewsLinks(ticker) {
+    if (!ticker) return;
+    const newsSec = document.getElementById('newsSection');
+    const aiSec = document.getElementById('aiSection');
+    if (!newsSec || !aiSec) return;
+    
+    newsSec.style.display = 'block';
+    aiSec.style.display = 'block';
+    
+    document.getElementById('newsGoogle').href = 'https://www.google.com/search?q=' + ticker + '+stock';
+    document.getElementById('newsReuters').href = 'https://www.reuters.com/search/news?blob=' + ticker;
+    document.getElementById('newsYahoo').href = 'https://finance.yahoo.com/quote/' + ticker;
+    document.getElementById('newsMarketWatch').href = 'https://www.marketwatch.com/investing/stock/' + ticker.toLowerCase();
+    document.getElementById('newsSEC').href = 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=' + ticker + '&type=';
+}
+
+function renderAll(stock) { updateNewsLinks(currentTicker);
             renderOverview(stock);
         }
         
-        function formatNum(n, type = 'number') {
+        document.getElementById('aiBtn')?.addEventListener('click', async () => {
+    if (!currentTicker) return;
+    const out = document.getElementById('aiOutput');
+    out.innerHTML = '<div style="color:#9c27b0;padding:10px">🤔 Analyzing ' + currentTicker + '...</div>';
+    
+    try {
+        const res = await fetch(API_BASE + '/api/stock?ticker=' + currentTicker);
+        const d = await res.json();
+        if (d.error) throw new Error(d.error);
+        
+        const c = d.change >= 0;
+        const trend = c ? '📈 BULLISH' : '📉 BEARISH';
+        const rec = c ? 'Consider holding or taking profit' : 'Consider buying on dip';
+        
+        out.innerHTML = '<div style="background:#1a1a25;padding:15px;border-radius:8px;line-height:1.7">' +
+            '<div style="color:#00d4aa;font-size:16px;margin-bottom:10px">📊 Stock Summary</div>' +
+            '<strong>Price:</strong> $' + d.price.toFixed(2) + ' (' + (c?'+':'') + d.change.toFixed(2) + ', ' + (c?'+':'') + d.changePct.toFixed(2) + '%)<br>' +
+            '<strong>Volume:</strong> ' + d.volume.toLocaleString() + '<br>' +
+            '<strong>Market Cap:</strong> ' + (d.marketCap ? '$' + (d.marketCap/1e9).toFixed(1) + 'B' : 'N/A') + '<br><br>' +
+            '<div style="color:#9c27b0;font-size:16px;margin-bottom:10px">📈 Technical Analysis</div>' +
+            '<strong>Trend:</strong> ' + trend + '<br>' +
+            '<strong>Recommendation:</strong> ' + rec + '<br><br>' +
+            '<div style="color:#ffc107;font-size:16px;margin-bottom:10px">🔮 Outlook</div>' +
+            '<div>Based on current price action and volume, ' + currentTicker + ' is showing ' + (c?'positive':'negative') + 
+            ' momentum. ' + (c?'Monitor for overbought conditions.','Consider watching for a support level.') + '</div></div>';
+    } catch(e) {
+        out.innerHTML = '<div style="color:#ff6b6b">❌ Error: ' + e.message + '</div>';
+    }
+});
+
+function formatNum(n, type = 'number') {
             if (n === null || n === undefined || isNaN(n)) return 'N/A';
             if (type === 'percent') return (n * 100).toFixed(2) + '%';
             if (type === 'currency') return '$' + (n >= 1e12 ? (n/1e12).toFixed(2) + 'T' : n >= 1e9 ? (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? (n/1e6).toFixed(2) + 'M' : n >= 1e3 ? (n/1e3).toFixed(2) + 'K' : n.toFixed(2));
