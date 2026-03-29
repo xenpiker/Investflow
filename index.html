@@ -128,7 +128,7 @@
         <p>Track, compare, and analyze any stock with live data</p>
         
         <div class="data-notice">
-            ⚠️ <strong>Rate Limit:</strong> 5 API calls/minute on free tier. If it fails, wait 1 minute and try again.
+            ⚠️ <strong>Rate Limit:</strong> 25 API calls/day (free tier - ~1 request every 6 minutes). If it fails, wait 1 minute and try again.
         </div>
         
         <div class="search-box">
@@ -140,6 +140,15 @@
     
     <div class="content active" id="overview">
         <div id="overviewContent"><div class="no-data">Enter a ticker to analyze</div></div>
+        
+        <!-- News Section -->
+        <div id="newsSection" style="display:none">
+            <div class="section">
+                <h3>📰 Latest News & Research</h3>
+                <p style="color:var(--text-dim);margin-bottom:15px;font-size:14px">Click a link to research this stock:</p>
+                <div id="newsLinks" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+        </div>
     </div>
     
     <div class="content" id="watchlist">
@@ -320,6 +329,36 @@
             if (type === 'percent') return (n * 100).toFixed(2) + '%';
             if (type === 'currency') return '$' + (n >= 1e12 ? (n/1e12).toFixed(2) + 'T' : n >= 1e9 ? (n/1e9).toFixed(2) + 'B' : n >= 1e6 ? (n/1e6).toFixed(2) + 'M' : n >= 1e3 ? (n/1e3).toFixed(2) + 'K' : n.toFixed(2));
             return n.toFixed(2);
+        }
+        
+        function updateNewsLinks(ticker) {
+            const newsDiv = document.getElementById('newsLinks');
+            const newsSection = document.getElementById('newsSection');
+            if (!ticker || !newsDiv) return;
+            
+            newsSection.style.display = 'block';
+            newsDiv.innerHTML = `
+                <a href="https://www.google.com/search?q=${ticker}+stock+news" target="_blank" style="background:var(--card);padding:12px;border-radius:8px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px">
+                    <span style="font-size:20px">🔍</span>
+                    <div><strong>Google News</strong> - Latest ${ticker} news</div>
+                </a>
+                <a href="https://www.reuters.com/search/news?blob=${ticker}" target="_blank" style="background:var(--card);padding:12px;border-radius:8px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px">
+                    <span style="font-size:20px">📰</span>
+                    <div><strong>Reuters</strong> - Professional financial news</div>
+                </a>
+                <a href="https://www.marketwatch.com/investing/stock/${ticker}" target="_blank" style="background:var(--card);padding:12px;border-radius:8px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px">
+                    <span style="font-size:20px">📊</span>
+                    <div><strong>MarketWatch</strong> - Market data & charts</div>
+                </a>
+                <a href="https://finance.yahoo.com/quote/${ticker}" target="_blank" style="background:var(--card);padding:12px;border-radius:8px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px">
+                    <span style="font-size:20px">💹</span>
+                    <div><strong>Yahoo Finance</strong> - Full quote page</div>
+                </a>
+                <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${ticker}&type=10-K" target="_blank" style="background:var(--card);padding:12px;border-radius:8px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:10px">
+                    <span style="font-size:20px">📄</span>
+                    <div><strong>SEC Filings</strong> - Annual reports (10-K)</div>
+                </a>
+            `;
         }
         
         function renderOverview(stock) {
