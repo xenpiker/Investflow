@@ -373,7 +373,7 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
             '<strong>Recommendation:</strong> ' + rec + '<br><br>' +
             '<div style="color:#ffc107;font-size:16px;margin-bottom:10px">🔮 Outlook</div>' +
             '<div>Based on current price action and volume, ' + currentTicker + ' is showing ' + (c?'positive':'negative') + 
-            ' momentum. ' + (c?'Monitor for overbought conditions.','Consider watching for a support level.') + '</div></div>';
+            ' momentum. ' + (c ? 'Monitor for overbought conditions.' : 'Consider watching for a support level.') + '</div></div>';
     } catch(e) {
         out.innerHTML = '<div style="color:#ff6b6b">❌ Error: ' + e.message + '</div>';
     }
