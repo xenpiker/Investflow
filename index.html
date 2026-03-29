@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvestFlow Pro - Stock Analysis</title>
+    <title>InvestFlow Pro - AI Stock Analyst</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --bg: #0a0a0f; --card: #12121a; --hover: #1a1a25; --accent: #00d4aa; --text: #e8e8e8; --text-dim: #666; --danger: #ff6b6b; --warning: #ffc107; --success: #4caf50; }
@@ -140,12 +140,13 @@
     </header>
     
     <div class="hero">
-        <h1>Stock <span>Analysis</span></h1>
+        <h1>AI <span>Stock Analyst</span></h1>
         <p>Enter a ticker symbol to analyze</p>
         
         <div class="search-box" style="max-width: 700px;">
             <input type="text" id="tickerInput" placeholder="Enter ticker (e.g., AAPL, MSFT, NVDA)">
             <button onclick="analyzeStock()">Search</button>
+            <button onclick="clearInput()" style="background:#333;color:#fff" title="Clear">✕</button>
             <button onclick="showMostActive()" style="background:#00d4aa;color:#000">📊 Most Active</button>
         </div>
         
@@ -379,6 +380,14 @@
             }
         }
         updateMarketStatus();
+        
+        function clearInput() {
+            document.getElementById('tickerInput').value = '';
+            document.getElementById('overviewContent').innerHTML = '<div class="no-data">Enter a ticker to search</div>';
+            document.getElementById('aiSection').style.display = 'none';
+            document.getElementById('newsSection').style.display = 'none';
+            currentTicker = '';
+        }
         
         async function analyzeStock() {
             const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
