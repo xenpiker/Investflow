@@ -339,6 +339,8 @@
 
 function renderAll(stock) { updateNewsLinks(currentTicker);
             renderOverview(stock);
+            // Show AI button after stock is loaded
+            document.getElementById('aiSection').style.display = 'block';
         }
         
         document.getElementById('aiBtn')?.addEventListener('click', async () => {
@@ -384,8 +386,6 @@ function renderAll(stock) { updateNewsLinks(currentTicker);
             ' momentum. ' + (c ? 'Monitor for overbought conditions.' : 'Consider watching for a support level.') + '</div>' +
             (compHTML ? '<div style="color:#ff9800;font-size:16px;margin:20px 0 10px">🏢 Competitors / Similar Stocks</div>' + compHTML : '') + '</div>';
         
-        // Show AI section after generation
-        document.getElementById('aiSection').style.display = 'block';
     } catch(e) {
         out.innerHTML = '<div style="color:#ff6b6b">❌ Error: ' + e.message + '</div>';
     }
